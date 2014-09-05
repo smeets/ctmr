@@ -44,8 +44,6 @@
             <hr>
 		</div>
 
-		
-
 		<script type="text/javascript">
 
             $ = function (str) { return document.getElementById(str) }
@@ -93,21 +91,19 @@
                     delete_timer(div, timer)
                 }
 
-                div.className = "timer"
-
                 num.className = "number"
                 num.appendChild(document.createTextNode("#" + timerx.length))
+                div.appendChild(num)
 
                 name.className = "name"
                 name.appendChild(document.createTextNode(timer.name))
+                div.appendChild(name)
 
                 time.className = "time"
                 time.appendChild(document.createTextNode(timef.h + "h" + timef.m + "m" + timef.s + "s"))
-
-                div.appendChild(num)
-                div.appendChild(name)
                 div.appendChild(time)
 
+                div.className = "timer"
                 timerList.appendChild(div)
 
                 timerx.push({
@@ -161,7 +157,7 @@
             // update the timers 50 times per second
 			setInterval(function () {
 				render_list()
-			}, 16)
+			}, 20)
 
 
 			function newTimer(name, expiration) {
@@ -190,14 +186,15 @@
 					// assume it expires tomorrow instead.
 					if (expireDate.getTime() < (new Date()).getTime())
 						expireDate.setDate(expireDate.getDate() + 1)
-				} else {
-					// takes care of time-into-the-future,
-					// like 5m, 15h33m, 33m:22s, 11h:22s
+				} else if ( expiration.indexOf("h") >= 0 
+                         || expiration.indexOf("m") >= 0 
+                         || expiration.indexOf("s") >= 0) {
 
+					// takes care of time-into-the-future,
+					// like 5m, 15h33m, 33m22s, 11h22s
 					var reg = /(?:(\d+)(?:h))?(?:(\d+)(?:m))?(?:(\d+)(?:s))?/,
 						groups = reg.exec(expiration),
-						msec = (groups[1] || 0) * 3600 * 1000 + (groups[2] || 0) * 60 * 1000 + (groups[3] || 0) * 1000,
-						add = new Date()
+						msec = (groups[1] || 0) * 3600 * 1000 + (groups[2] || 0) * 60 * 1000 + (groups[3] || 0) * 1000
 
 					expireDate.setTime(expireDate.getTime() + msec)
 				}
