@@ -3,14 +3,32 @@
 		<title>ctmr - for none of your timing needs</title>
 
 		<style type="text/css">
-			p {
+			.timer {
 				font-size: 1.2em;
 			}
 
-			p:hover {
+			.timer:hover {
 				background-color: yellow;
 				cursor: pointer;
 			}
+
+            .timer p {
+                display: inline-block;
+                font-family: Helvetica;
+            }
+
+            .number {
+                float: left;
+                margin-right: 2em;
+            }
+
+            .name {
+                
+            }
+
+            .time {
+                float: right;
+            }
 		</style>
 
 	</head>
@@ -23,52 +41,105 @@
 			<button id="timerBtn">new timer</button>
 			<hr>
 			<div id="list"></div>
+            <hr>
 		</div>
 
 		
 
 		<script type="text/javascript">
 
-			var timerBtn = document.getElementById("timerBtn"),
-				dataField = document.getElementById("allTheData"),
-				timerList = document.getElementById("list"),
-				dataName = document.getElementById("timerName"),
-				timerz = [],
-				tmp = document.cookie.split(";")
+            $ = function (str) { return document.getElementById(str) }
+
+			var dataField = $("allTheData"),
+				dataName = $("timerName"),
+                timerList = $("list"),
+				tmp = document.cookie.split(";"),
+                timerx = []
 
 			// generate an alpha numeric string of length 4
 			function S4() {
-			    return (((1+Math.random())*0x10000)|0).toString(16).substring(1); 
+			    return (((1+Math.random())*0x10000)|0).toString(16).substring(1)
 			}
 
-			// render the timerz list
+            // remove timer from DOM, cookies and temp. array
+            function delete_timer (div, timer) {
+                timerList.removeChild(div)
+                document.cookie = "timer" + timer.id + "=; expires=Thu, 18 Dec 2013 12:00:00 UTC"
+            }
+
+            // convert ms to hour/min/sec
+            function format_time(ms) {
+                var h = Math.floor(ms / (3600000)),
+                    m = Math.floor((ms - h * 3600000) / (60000)),
+                    s = Math.floor((ms - h * 3600000 - m * 60000) / 1000)
+
+                return {
+                    h : h,
+                    m : m,
+                    s : s
+                }
+            }
+
+            // setup timer
+            function create_timer_element(timer) {
+                var div = document.createElement("div"),
+                    timef = format_time(timer.date - (new Date())),
+
+                    num = document.createElement("p"),
+                    name = document.createElement("p"),
+                    time = document.createElement("p")
+
+                div.onclick = function (e) {
+                    delete_timer(div, timer)
+                }
+
+                div.className = "timer"
+
+                num.className = "number"
+                num.appendChild(document.createTextNode("#" + timerx.length))
+
+                name.className = "name"
+                name.appendChild(document.createTextNode(timer.name))
+
+                time.className = "time"
+                time.appendChild(document.createTextNode(timef.h + "h" + timef.m + "m" + timef.s + "s"))
+
+                div.appendChild(num)
+                div.appendChild(name)
+                div.appendChild(time)
+
+                timerList.appendChild(div)
+
+                timerx.push({
+                    div : div,
+                    num : num,
+                    name : name,
+                    time : time,
+                    id : timer.id,
+                    date : timer.date,
+                    duration : timer.date - new Date()
+                 })
+            }
+
+			// render the timerx list
 			function render_list() {
 				var refTime = new Date()
-				for (var i = 0; i < timerz.length; i++) {
-					if (timerz[i].date.getTime() >= refTime.getTime()) {
-						var para = document.createElement("p"),
+				for (var i = 0; i < timerx.length; i++) {
+					var ms = (timerx[i].date - refTime),
+						timef = format_time(ms)
 
-							ms = (timerz[i].date - refTime),
-							h = Math.floor(ms / (3600000)),
-							m = Math.floor((ms - h * 3600000) / (60000)),
-							s = Math.floor((ms - h * 3600000 - m * 60000) / 1000),
+                     // Remove old time
+					timerx[i].time.removeChild(timerx[i].time.firstChild)
+                    timerx[i].time.appendChild(document.createTextNode(timef.h + "h" + timef.m + "m" + timef.s + "s"))
 
-							text = document.createTextNode(
-								"#" + i + " " 
-								+ timerz[i].name + " : " 
-								+ h + "h" + m + "m" + s + "s "
-								+ "(" + timerz[i].date + ")")
-						
-						// copy the number
-						var x = i
-						para.onclick = function (e) {
-							timerList.removeChild(para)
-							document.cookie = "timer" + timerz.splice(x, 1)[0].id + "=; expires=Thu, 18 Dec 2013 12:00:00 UTC"
-						}
+                    var percent = 100 - 100 * ((ms + 0.0) / timerx[i].duration)
+                    timerx[i].div.setAttribute("style", 
+                        "background-image: -webkit-linear-gradient(left, #00FF00 " + percent + "%, transparent " + (percent + 1) + "%);")
 
-						para.appendChild(text)
-						timerList.appendChild(para)
-					}
+                    if (ms < 0) {
+                        delete_timer(timerx[i].div, timerx[i])
+                        timerx.splice(i, 1)
+                    }
 				}
 			}
 
@@ -79,7 +150,7 @@
 					var date = new Date()
 					date.setTime(tmp[i].substring(index + 6, tmp[i].length))
 
-					timerz.push({ 
+					create_timer_element({ 
 							name : tmp[i].substring(7 + 16, index), 
 							date : date,
 							id   : tmp[i].substring(6, 6 + 16)
@@ -87,19 +158,10 @@
 				}
 			}
 
-			// render immediately
-			render_list()
-
-            // scheduled to update list every second
+            // update the timers 50 times per second
 			setInterval(function () {
-				// Clear all present timers
-				while (timerList.firstChild) {
-				    timerList.removeChild(timerList.firstChild)
-				}
-
-				// Redraw
 				render_list()
-			}, 1000)
+			}, 16)
 
 
 			function newTimer(name, expiration) {
@@ -109,8 +171,7 @@
 
 				// possible expirations:
 				//	1h, 13:30, 5min
-				if (index >= 0)
-				{
+				if (index >= 0) {
 					// this fixes 24 hour dates to always have seconds
 					// 13:30 --> 13:30:00
 					var index2 = expiration.indexOf(":", index + 1)
@@ -129,9 +190,7 @@
 					// assume it expires tomorrow instead.
 					if (expireDate.getTime() < (new Date()).getTime())
 						expireDate.setDate(expireDate.getDate() + 1)
-				}
-				else 
-				{
+				} else {
 					// takes care of time-into-the-future,
 					// like 5m, 15h33m, 33m:22s, 11h:22s
 
@@ -143,11 +202,11 @@
 					expireDate.setTime(expireDate.getTime() + msec)
 				}
 
-				timerz.push({ 
-					name: name, 
-					date : expireDate, 
-					id : id 
-				})
+                create_timer_element({ 
+                    name: name, 
+                    date : expireDate, 
+                    id : id 
+                })
 
 				document.cookie = "timer" + id
 				 + "=" + name + "#DATE#" + expireDate.getTime()
@@ -155,7 +214,7 @@
 			}
 
 
-			timerBtn.onclick = function (e) {
+			$("timerBtn").onclick = function (e) {
 				newTimer(dataName.value, dataField.value)
 			}
 		</script>
