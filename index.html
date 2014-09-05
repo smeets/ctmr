@@ -17,13 +17,7 @@
                 font-family: Helvetica;
             }
 
-            .number {
-                float: left;
-                margin-right: 2em;
-            }
-
             .name {
-                
             }
 
             .time {
@@ -81,19 +75,13 @@
             // setup timer
             function create_timer_element(timer) {
                 var div = document.createElement("div"),
-                    timef = format_time(timer.date - (new Date())),
-
-                    num = document.createElement("p"),
+                    timef = format_time(timer.date - Date.now()),
                     name = document.createElement("p"),
                     time = document.createElement("p")
 
                 div.onclick = function (e) {
                     delete_timer(div, timer)
                 }
-
-                num.className = "number"
-                num.appendChild(document.createTextNode("#" + timerx.length))
-                div.appendChild(num)
 
                 name.className = "name"
                 name.appendChild(document.createTextNode(timer.name))
@@ -108,7 +96,6 @@
 
                 timerx.push({
                     div : div,
-                    num : num,
                     name : name,
                     time : time,
                     id : timer.id,
@@ -119,9 +106,8 @@
 
 			// render the timerx list
 			function render_list() {
-				var refTime = new Date()
 				for (var i = 0; i < timerx.length; i++) {
-					var ms = (timerx[i].date - refTime),
+					var ms = (timerx[i].date - Date.now()),
 						timef = format_time(ms)
 
                      // Remove old time
@@ -184,7 +170,7 @@
 					
 					// If we already moved passed expiration time,
 					// assume it expires tomorrow instead.
-					if (expireDate.getTime() < (new Date()).getTime())
+					if (expireDate.getTime() < Date.now().getTime())
 						expireDate.setDate(expireDate.getDate() + 1)
 				} else if ( expiration.indexOf("h") >= 0 
                          || expiration.indexOf("m") >= 0 
