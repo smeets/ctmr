@@ -1,0 +1,170 @@
+<html>
+	<head>
+		<title>tmr - for none of your timing needs</title>
+
+		<style type="text/css">
+			p {
+				font-size: 1.2em;
+			}
+
+			p:hover {
+				background-color: yellow;
+				cursor: pointer;
+			}
+		</style>
+
+	</head>
+
+	<body>
+		<div>
+			<h1>tmr - cookie based timers</h1>
+			<input id="timerName" placeholder="timer name">
+			<input id="allTheData" placeholder="some time value pls">
+			<button id="timerBtn">new timer</button>
+			<hr>
+			<div id="list"></div>
+		</div>
+
+		
+
+		<script type="text/javascript">
+
+			var timerBtn = document.getElementById("timerBtn"),
+				dataField = document.getElementById("allTheData"),
+				timerList = document.getElementById("list"),
+				dataName = document.getElementById("timerName"),
+				timerz = [],
+				tmp = document.cookie.split(";")
+			
+			console.log(tmp)
+
+			// generate an alpha numeric string of length 4
+			function S4() {
+			    return (((1+Math.random())*0x10000)|0).toString(16).substring(1); 
+			}
+
+			// render the timerz list
+			function render_list() {
+				var refTime = new Date()
+				for (var i = 0; i < timerz.length; i++) {
+					if (timerz[i].date.getTime() >= refTime.getTime()) {
+						var para = document.createElement("p"),
+
+							ms = (timerz[i].date - refTime),
+							h = Math.floor(ms / (3600000)),
+							m = Math.floor((ms - h * 3600000) / (60000)),
+							s = Math.floor((ms - h * 3600000 - m * 60000) / 1000),
+
+							text = document.createTextNode(
+								"#" + i + " " 
+								+ timerz[i].name + " : " 
+								+ h + "h" + m + "m" + s + "s "
+								+ "(" + timerz[i].date + ")")
+						
+						// copy the number
+						var x = i
+						para.onclick = function (e) {
+							timerList.removeChild(para)
+							document.cookie = "timer" + timerz.splice(x, 1)[0].id + "=; expires=Thu, 18 Dec 2013 12:00:00 UTC"
+						}
+
+						para.appendChild(text)
+						timerList.appendChild(para)
+					}
+				}
+			}
+
+			// parse cookies
+			for (var i = 0; i < tmp.length; i++) {
+				var index = tmp[i].indexOf("#DATE#")
+				if (index >= 0) {
+					var date = new Date()
+					date.setTime(tmp[i].substring(index + 6, tmp[i].length))
+
+					timerz.push({ 
+							name : tmp[i].substring(7 + 16, index), 
+							date : date,
+							id   : tmp[i].substring(6, 6 + 16)
+						})
+				}
+			}
+
+			// render immediately
+			render_list()
+
+			setInterval(function () {
+				// Clear all present timers
+				while (timerList.firstChild) {
+				    timerList.removeChild(timerList.firstChild)
+				}
+
+				// Redraw
+				render_list()
+			}, 1000)
+
+			
+			function newTimer(name, expiration) {
+				var expireDate = new Date(),
+					index = expiration.indexOf(":"),
+					id = S4() + S4() + S4() + S4()
+
+				console.log("new timer:")
+
+				// possible expirations:
+				//	1h, 13:30, 5min
+				if (index >= 0)
+				{
+					// this fixes 24 hour dates to always have seconds
+					// 13:30 --> 13:30:00
+					var index2 = expiration.indexOf(":", index + 1)
+					if (index2 < 0)
+						expiration += ":00"
+
+					// regex parses out time info to matching groups
+					var reg = /((?:[01]\d)|(?:2[0-3])):([0-5]\d):([0-5]\d)/g,
+						groups = reg.exec(expiration)
+
+					console.log(groups)
+
+					expireDate.setHours(groups[1])
+					expireDate.setMinutes(groups[2])
+					expireDate.setSeconds(groups[3])
+					
+					// If we already moved passed expiration time,
+					// assume it expires tomorrow instead.
+					if (expireDate.getTime() < (new Date()).getTime())
+						expireDate.setDate(expireDate.getDate() + 1)
+				}
+				else 
+				{
+					// takes care of time-into-the-future,
+					// like 5m, 15h33m, 33m:22s, 11h:22s
+
+					var reg = /(?:(\d+)(?:h))?(?:(\d+)(?:m))?(?:(\d+)(?:s))?/,
+						groups = reg.exec(expiration),
+						msec = (groups[1] || 0) * 3600 * 1000 + (groups[2] || 0) * 60 * 1000 + (groups[3] || 0) * 1000,
+						add = new Date()
+
+					expireDate.setTime(expireDate.getTime() + msec)
+
+					console.log(reg.exec(groups), msec)
+				}
+
+				timerz.push({ 
+					name: name, 
+					date : expireDate, 
+					id : id 
+				})
+
+				document.cookie = "timer" + id
+				 + "=" + name + "#DATE#" + expireDate.getTime()
+				  + "; expires=" + expireDate.toUTCString()
+			}
+
+
+			timerBtn.onclick = function (e) {
+				newTimer(dataName.value, dataField.value)
+			}
+		</script>
+	</body>
+</html>
