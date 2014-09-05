@@ -6,7 +6,7 @@ and their expiration times.
 
 Starting philosophy was that if cookies expired by themselves then 
 they could be viewed as a (self cleaning) timer. After some investigation
-this wasn't really possible because expiration dates aren't accessiable from
+I found out that expiration dates aren't accessiable from
 client-side, so now everything is baked into the cookie value instead...
 
 Local storage is looking good  ._.
