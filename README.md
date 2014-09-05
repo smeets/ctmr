@@ -18,6 +18,7 @@ how-to
 2. pull and run `node server.js`
 3. browse to localhost:8080
 4. enjoy all your timing needs
+5. terminate timer by clicking on it
 
 notes on input
 --------------
