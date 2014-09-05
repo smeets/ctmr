@@ -26,3 +26,7 @@ The timer parser currently accepts the following:
 13h:4m:22s -- offset into the future, accepts any combination
 
 13:04:22 -- specific time today, or tomorrow if time has passed
+
+license
+-------
+MIT
