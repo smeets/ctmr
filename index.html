@@ -35,8 +35,6 @@
 				dataName = document.getElementById("timerName"),
 				timerz = [],
 				tmp = document.cookie.split(";")
-			
-			console.log(tmp)
 
 			// generate an alpha numeric string of length 4
 			function S4() {
@@ -92,6 +90,7 @@
 			// render immediately
 			render_list()
 
+            // scheduled to update list every second
 			setInterval(function () {
 				// Clear all present timers
 				while (timerList.firstChild) {
@@ -108,8 +107,6 @@
 					index = expiration.indexOf(":"),
 					id = S4() + S4() + S4() + S4()
 
-				console.log("new timer:")
-
 				// possible expirations:
 				//	1h, 13:30, 5min
 				if (index >= 0)
@@ -123,8 +120,6 @@
 					// regex parses out time info to matching groups
 					var reg = /((?:[01]\d)|(?:2[0-3])):([0-5]\d):([0-5]\d)/g,
 						groups = reg.exec(expiration)
-
-					console.log(groups)
 
 					expireDate.setHours(groups[1])
 					expireDate.setMinutes(groups[2])
@@ -146,8 +141,6 @@
 						add = new Date()
 
 					expireDate.setTime(expireDate.getTime() + msec)
-
-					console.log(reg.exec(groups), msec)
 				}
 
 				timerz.push({ 
