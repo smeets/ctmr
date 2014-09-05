@@ -1,4 +1,4 @@
-ctmr - a cookie based timer experiment
+ctmr - a cookie-based timer experiment
 =====================================
 
 A short 2-hour project for experimenting with cookies
