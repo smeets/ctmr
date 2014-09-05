@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>tmr - for none of your timing needs</title>
+		<title>ctmr - for none of your timing needs</title>
 
 		<style type="text/css">
 			p {
@@ -17,7 +17,7 @@
 
 	<body>
 		<div>
-			<h1>tmr - cookie based timers</h1>
+			<h1>ctmr - cookie based timers</h1>
 			<input id="timerName" placeholder="timer name">
 			<input id="allTheData" placeholder="some time value pls">
 			<button id="timerBtn">new timer</button>
@@ -102,7 +102,7 @@
 				render_list()
 			}, 1000)
 
-			
+
 			function newTimer(name, expiration) {
 				var expireDate = new Date(),
 					index = expiration.indexOf(":"),
